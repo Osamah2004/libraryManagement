@@ -1,38 +1,30 @@
 package controller;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import model.Book;
 import repository.BookRepository;
+import service.BookService;
 
 public class LibraryController {
-    private final ObservableList<Book> books;
-    private final BookRepository repo;
+    private final BookService bookService;
 
     public LibraryController() {
-        repo = BookRepository.getInstance();
-        books = FXCollections.observableArrayList(repo.loadBooks());
+        this.bookService = new BookService(BookRepository.getInstance());
     }
 
     public ObservableList<Book> getBooks() {
-        return books;
+        return bookService.getBooks();
     }
 
     public void addBook(Book book) {
-        books.add(book);
-        repo.saveBooks(books);
+        bookService.addBook(book);
     }
 
     public void removeBook(Book book) {
-        books.remove(book);
-        repo.saveBooks(books);
+        bookService.removeBook(book);
     }
 
     public void updateBook(Book oldBook, Book newBook) {
-        int idx = books.indexOf(oldBook);
-        if (idx != -1) {
-            books.set(idx, newBook);
-            repo.saveBooks(books);
-        }
+        bookService.updateBook(oldBook, newBook);
     }
 }

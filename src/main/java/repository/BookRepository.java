@@ -1,16 +1,20 @@
 package repository;
 
-import model.Book;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BookRepository {
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import model.Book;
+
+public class BookRepository implements IBookRepository {
     private static final String FILE_PATH = "books.json";
     private static BookRepository instance;
 
@@ -22,6 +26,7 @@ public class BookRepository {
         return instance;
     }
 
+    @Override
     public List<Book> loadBooks() {
         List<Book> books = new ArrayList<>();
         try (InputStream is = new FileInputStream(FILE_PATH)) {
@@ -36,11 +41,12 @@ public class BookRepository {
                 ));
             }
         } catch (Exception e) {
-            // Return empty if file not found or error
+            // Ignore file errors
         }
         return books;
     }
 
+    @Override
     public void saveBooks(List<Book> books) {
         JSONArray arr = new JSONArray();
         for (Book b : books) {

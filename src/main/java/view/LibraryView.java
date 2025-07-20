@@ -1,16 +1,22 @@
 package view;
 
+import java.time.LocalDate;
+
 import controller.LibraryController;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.DatePicker;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.TextField;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.*;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.LocalDateStringConverter;
 import model.Book;
-
-import java.time.LocalDate;
 
 public class LibraryView {
     private final LibraryController controller;
@@ -38,7 +44,6 @@ public class LibraryView {
         dateCol.setCellValueFactory(data -> new javafx.beans.property.ReadOnlyObjectWrapper<>(data.getValue().getReleaseDate()));
         dateCol.setCellFactory(TextFieldTableCell.forTableColumn(new LocalDateStringConverter()));
 
-
         table.getColumns().addAll(nameCol, authorCol, priceCol, dateCol);
         table.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         table.setEditable(true);
@@ -58,19 +63,35 @@ public class LibraryView {
         Button addBtn = new Button("Add");
         addBtn.setOnAction(e -> {
             try {
-                Book book = new Book(
-                        nameField.getText(),
-                        authorField.getText(),
-                        Double.parseDouble(priceField.getText()),
-                        releaseDatePicker.getValue()
-                );
+                String name = nameField.getText();
+                String author = authorField.getText();
+                String priceText = priceField.getText();
+                LocalDate releaseDate = releaseDatePicker.getValue();
+
+                if (name.isEmpty() || author.isEmpty() || priceText.isEmpty() || releaseDate == null) {
+                    showAlert("All fields are required.");
+                    return;
+                }
+
+                double price;
+                try {
+                    price = Double.parseDouble(priceText);
+                } catch (NumberFormatException nfe) {
+                    showAlert("Price must be a valid number.");
+                    return;
+                }
+
+                Book book = new Book(name, author, price, releaseDate);
                 controller.addBook(book);
+
                 nameField.clear();
                 authorField.clear();
                 priceField.clear();
                 releaseDatePicker.setValue(null);
+
             } catch (Exception ex) {
                 ex.printStackTrace();
+                showAlert("Unexpected error occurred.");
             }
         });
 
@@ -87,5 +108,13 @@ public class LibraryView {
         layout.setPadding(new javafx.geometry.Insets(10));
 
         return new Scene(layout, 800, 600);
+    }
+
+    private void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setTitle("Input Error");
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }
